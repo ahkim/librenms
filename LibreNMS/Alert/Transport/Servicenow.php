@@ -20,8 +20,10 @@ class Servicenow extends Transport
 {
     public function deliverAlert($obj, $opts)
     {
-        $opts['url'] = $this->config['servicenow-url'];        
-        $opts['body'] = $this->config['servicenow-body'];
+        $opts['instance'] = $this->config['servicenow-instance'];
+        $opts['impact'] = $this->config['servicenow-impact'];
+        $opts['urgency'] = $this->config['servicenow-urgency'];
+        $opts['caller'] = $this->config['servicenow-caller'];
 		$opts['username'] = $this->config['servicenow-auth-username'];
 		$opts['password'] = $this->config['servicenow-auth-password'];
 		
@@ -34,19 +36,25 @@ class Servicenow extends Transport
         $client = new \GuzzleHttp\Client([
 			'auth' => [$opts['username'], $opts['password']],
 		]); 
-		
-		$res = $client->post($opts['url'], [
+        
+        $arr = array('caller_id' => $opts['caller'],
+                     'short_description' => $obj['title'], 
+                     'impact' => $opts['impact'], 
+                     'urgency' => $opts['urgency'], 
+                     'description' => $obj['sysDescr']);
+
+		$res = $client->post("https://".$opts['instance'].".service-now.com/api/now/v1/table/incident", [
 			'headers' => [
 				'Content-Type' => 'application/json',
 				'accept' => '*/*',
 				'accept-encoding' => 'gzip, deflate'
 			],			
-			'body' => $opts['body']
+			'body' => json_encode($arr)
 		]);
 
         $code = $res->getStatusCode();
         if ($code != 201) {
-            var_dump("ServiceNow " .$opts['url']. " returned Error");
+            var_dump("ServiceNow " .$opts['instance']. " returned Error");
             var_dump("Response headers:");
             var_dump($res->getHeaders());
             var_dump("Return: ".$res->getReasonPhrase());
@@ -59,16 +67,28 @@ class Servicenow extends Transport
         return [
             'config' => [
                 [
-                    'title' => 'ServiceNow object URL',
-                    'name' => 'servicenow-url',
-                    'descr' => 'ServiceNow object URL',
+                    'title' => 'ServiceNow Instance',
+                    'name' => 'servicenow-instance',
+                    'descr' => 'ServiceNow Instance',
                     'type' => 'text',
                 ],
                 [
-                    'title' => 'Request Body',
-                    'name' => 'servicenow-body',
-                    'descr' => 'Enter the json body',
-                    'type' => 'textarea',
+                    'title' => 'Caller',
+                    'name' => 'servicenow-caller',
+                    'descr' => 'Caller of the ticket to raise',
+                    'type' => 'text',
+                ],
+                [
+                    'title' => 'Impact',
+                    'name' => 'servicenow-impact',
+                    'descr' => '1 - High/2 - Medium/3 - Low',
+                    'type' => 'text',
+                ],
+                [
+                    'title' => 'Urgency',
+                    'name' => 'servicenow-urgency',
+                    'descr' => '1 - High/2 - Medium/3 - Low',
+                    'type' => 'text',
                 ],
                 [
                     'title' => 'ServiceNow Username',
@@ -84,9 +104,11 @@ class Servicenow extends Transport
                 ]
             ],
             'validation' => [
-                'servicenow-url' => 'required|url',
-				'servicenow-auth-username' => 'required',
-				'servicenow-auth-password' => 'required'
+                'servicenow-instance' => 'required|string',
+                'servicenow-impact' => 'required|numeric',
+                'servicenow-urgency' => 'required|numeric',
+				'servicenow-auth-username' => 'required|string',
+				'servicenow-auth-password' => 'required|string'
             ]
         ];
     }
