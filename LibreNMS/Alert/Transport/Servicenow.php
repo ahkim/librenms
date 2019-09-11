@@ -20,33 +20,33 @@ class Servicenow extends Transport
 {
     public function deliverAlert($obj, $opts)
     {
-        $url = $this->config['servicenow-url'];
-        $body = $this->config['servicenow-body'];
-		$username = $this->config['servicenow-auth-username'];
-		$password = $this->config['servicenow-auth-password'];
+        $opts['url'] = $this->config['servicenow-url'];        
+        $opts['body'] = $this->config['servicenow-body'];
+		$opts['username'] = $this->config['servicenow-auth-username'];
+		$opts['password'] = $this->config['servicenow-auth-password'];
 		
-        return $this->contactSERVICENOW($obj, $url, $body, $username, $password);
+        return $this->contactSERVICENOW($obj, $opts);
     }
-    private function contactSERVICENOW($obj, $url, $body, $username, $password)
+    private function contactSERVICENOW($obj, $opts)
     {
         $request_opts = [];
 
         $client = new \GuzzleHttp\Client([
-			'auth' => [$username, $password],
+			'auth' => [$opts['username'], $opts['password']],
 		]); 
 		
-		$res = $client->post($url, [
+		$res = $client->post($opts['url'], [
 			'headers' => [
 				'Content-Type' => 'application/json',
 				'accept' => '*/*',
 				'accept-encoding' => 'gzip, deflate'
 			],			
-			'body' => $body
+			'body' => $opts['body']
 		]);
 
         $code = $res->getStatusCode();
         if ($code != 201) {
-            var_dump("ServiceNow '$url' returned Error");
+            var_dump("ServiceNow " .$opts['url']. " returned Error");
             var_dump("Response headers:");
             var_dump($res->getHeaders());
             var_dump("Return: ".$res->getReasonPhrase());
