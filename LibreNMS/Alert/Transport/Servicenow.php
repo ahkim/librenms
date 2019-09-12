@@ -6,7 +6,7 @@
  * option) any later version.  Please see LICENSE.txt at the top level of
  * the source code distribution for details. */
  /**
- * ServiceNow Transport
+ * ServiceNow Transport to issue an incident out of alerts froms LibreNMS
  * @author Aaron Kim <https://github.com/ahkim>
  * @license GPL
  * @package LibreNMS
