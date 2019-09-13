@@ -36,12 +36,12 @@ class Servicenow extends Transport
         $client = new \GuzzleHttp\Client([
 			'auth' => [$opts['username'], $opts['password']],
 		]); 
-        
+
         $arr = array('caller_id' => $opts['caller'],
                      'short_description' => $obj['title'], 
                      'impact' => $opts['impact'], 
                      'urgency' => $opts['urgency'], 
-                     'description' => $obj['sysDescr']);
+                     'description' => $obj['msg']); # This passes body text built from the alert template
 
 		$res = $client->post("https://".$opts['instance'].".service-now.com/api/now/v1/table/incident", [
 			'headers' => [
@@ -75,7 +75,7 @@ class Servicenow extends Transport
                 [
                     'title' => 'Caller',
                     'name' => 'servicenow-caller',
-                    'descr' => 'Caller of the ticket to raise',
+                    'descr' => 'First & last name of the user',
                     'type' => 'text',
                 ],
                 [
@@ -93,7 +93,7 @@ class Servicenow extends Transport
                 [
                     'title' => 'ServiceNow Username',
                     'name' => 'servicenow-auth-username',
-                    'descr' => 'ServiceNow Username',
+                    'descr' => 'The user must have itil & itil_admin roles',
                     'type' => 'text',
                 ],
                 [
